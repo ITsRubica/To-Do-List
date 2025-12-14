@@ -40,20 +40,29 @@ require_once 'includes/auth.php';
         </section>
 
         <!-- FEATURES -->
-        <section class="features container py-5">
-            <div class="row text-center">
-            <div class="col-md-4">
-                <h3><i class="bi bi-check-circle-fill text-success me-2"></i>Easy to Use</h3>
-                <p>Create, edit, and manage tasks in just a few clicks.</p>
-            </div>
-            <div class="col-md-4">
-                <h3><i class="bi bi-calendar-check text-primary me-2"></i>Stay on Track</h3>
-                <p>Set deadlines, reminders, and priorities to never miss a task.</p>
-            </div>
-            <div class="col-md-4">
-                <h3><i class="bi bi-phone text-info me-2"></i>Accessible Anywhere</h3>
-                <p>Use it on desktop, tablet, or mobile seamlessly.</p>
-            </div>
+        <section class="features">
+            <div class="features-container">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h3>Easy to Use</h3>
+                    <p>Create, edit, and manage tasks in just a few clicks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h3>Stay on Track</h3>
+                    <p>Set deadlines, reminders, and priorities to never miss a task.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h3>Accessible Anywhere</h3>
+                    <p>Use it on desktop, tablet, or mobile seamlessly.</p>
+                </div>
             </div>
         </section>
 

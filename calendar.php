@@ -412,6 +412,12 @@ $user = getCurrentUser();
     function renderCalendar() {
       const monthYearDisplay = document.getElementById('monthYearDisplay');
       monthYearDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+      
+      // Update current date display in navbar
+      const now = new Date();
+      const options = { weekday: 'long', month: 'long', day: 'numeric' };
+      const formattedDate = now.toLocaleDateString('en-US', options);
+      document.getElementById('currentDate').textContent = formattedDate;
 
       const calendarDays = document.getElementById('calendarDays');
       calendarDays.innerHTML = '';

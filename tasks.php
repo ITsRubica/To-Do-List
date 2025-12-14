@@ -16,7 +16,10 @@ $user = getCurrentUser();
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Flatpickr Date Picker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script defer src="assets/script.js"></script>
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -105,6 +108,9 @@ $user = getCurrentUser();
         </div>
       </div>
     </div>
+
+    <!-- REMINDER NOTIFICATIONS -->
+    <div id="reminderContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1060; max-width: 400px;"></div>
 
     <!-- TASK LIST SECTION -->
     <section class="task-section mt-4">
@@ -221,7 +227,7 @@ $user = getCurrentUser();
                  <label for="taskDeadline" class="form-label fw-semibold d-flex align-items-center" style="color: #333; font-size: 1rem;">
                    <i class="bi bi-calendar3 me-2" style="color: #896C6C;"></i>Deadline
                  </label>
-                 <input type="datetime-local" class="form-control form-control-lg" id="taskDeadline" style="border: 2px solid #DDDAD0; border-radius: 15px; padding: 12px 16px;">
+                 <input type="text" class="form-control form-control-lg" id="taskDeadline" placeholder="Select date and time..." style="border: 2px solid #DDDAD0; border-radius: 15px; padding: 12px 16px;">
                </div>
                <div class="col-12 col-md-6">
                  <label for="taskPriority" class="form-label fw-semibold d-flex align-items-center" style="color: #333; font-size: 1rem;">
@@ -314,6 +320,18 @@ $user = getCurrentUser();
       const formattedDate = now.toLocaleDateString('en-US', options);
       const dateString = formattedDate.replace(/,/, ',').replace(/(\w+) (\d+), (\w+)/, '$1 $2, $3');
       document.getElementById('currentDate').textContent = dateString;
+      
+      // Initialize Flatpickr date picker
+      flatpickr("#taskDeadline", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: false,
+        minDate: "today",
+        altInput: true,
+        altFormat: "F j, Y h:i K",
+        monthSelectorType: "dropdown",
+        static: false
+      });
       
       // Load tasks
       loadTasks();
@@ -713,6 +731,76 @@ $user = getCurrentUser();
 
     // Reset form when modal is hidden
     document.getElementById('addTaskModal').addEventListener('hidden.bs.modal', resetForm);
+
+    // Reminder notification system
+    let shownReminders = new Set();
+    
+    function checkReminders() {
+      const now = new Date();
+      
+      tasks.forEach(task => {
+        if (task.status === 'completed' || !task.reminder || !task.deadline) {
+          return;
+        }
+        
+        const deadline = new Date(task.deadline);
+        const reminderTime = task.reminder_time || 15;
+        const reminderDate = new Date(deadline.getTime() - (reminderTime * 60 * 1000));
+        
+        const reminderKey = `${task.id}-${reminderTime}`;
+        
+        if (now >= reminderDate && now < deadline && !shownReminders.has(reminderKey)) {
+          showReminderNotification(task, reminderTime);
+          shownReminders.add(reminderKey);
+        }
+      });
+    }
+    
+    function showReminderNotification(task, minutesBefore) {
+      const container = document.getElementById('reminderContainer');
+      const notificationId = `reminder-${task.id}-${Date.now()}`;
+      
+      const notification = document.createElement('div');
+      notification.id = notificationId;
+      notification.className = 'reminder-notification';
+      notification.innerHTML = `
+        <div class="d-flex align-items-start">
+          <div class="reminder-icon">
+            <i class="bi bi-bell-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h6 class="reminder-title mb-1">Task Reminder</h6>
+            <p class="reminder-task-name mb-1">${task.title}</p>
+            <small class="reminder-time">Due in ${minutesBefore} minutes</small>
+          </div>
+          <button type="button" class="btn-close" onclick="closeReminder('${notificationId}')"></button>
+        </div>
+      `;
+      
+      container.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      setTimeout(() => {
+        closeReminder(notificationId);
+      }, 10000);
+    }
+    
+    function closeReminder(notificationId) {
+      const notification = document.getElementById(notificationId);
+      if (notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }
+    }
+    
+    window.closeReminder = closeReminder;
+    
+    setInterval(checkReminders, 30000);
 
     // Initialize page on load
     document.addEventListener('DOMContentLoaded', initializePage);
